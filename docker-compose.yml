@@ -1,0 +1,42 @@
+version: "3.7"
+networks:
+  net:
+    driver: overlay
+    attachable: true
+services:
+  backend-go:
+    image: reg-img-unic.sienge.com.br/dev-rocket/httpbin-go:0.0.1
+    environment:
+      - SERVER_PORT=${SERVER_PORT}
+      - CONTAINER_NAME=${CONTAINER_NAME}
+    ports:
+      - ${EXPOSED_PORT}:${SERVER_PORT}
+    networks:
+      - net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${SERVER_PORT}"]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '1'
+          memory: 32M
+        reservations:
+          memory: 16M
+      update_config:
+        parallelism: 1
+        order: start-first
+        failure_action: rollback
+        delay: 10s
+      rollback_config:
+        parallelism: 0
+        order: stop-first
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+        window: 120s
