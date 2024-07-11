@@ -2,7 +2,7 @@ services:
   httpbin:
     build:
       context: ./..
-      dockerfile: build/Dockerfile
+      dockerfile: ./build/Dockerfile
     environment:
       - HTTPBIN_SERVICE_PORT=8080
       - HTTPBIN_SERVICE_ID="my_httpbin"
