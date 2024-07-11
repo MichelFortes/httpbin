@@ -69,4 +69,13 @@ curl -i "localhost:8888/proxy?to=http://www.google.com"
 ```
 
 ## output 
-Replica os headers e body do destino proxiado 
+Replica os headers e body do destino proxiado
+
+
+# Execute
+
+Para executar o projeto localmente, entre no diretório _deployments_ e execute:
+
+```bash
+docker compose up
+```
