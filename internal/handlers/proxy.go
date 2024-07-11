@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
+	"michelfortes/httpbin/internal/constraints"
 	"net/http"
 )
 
@@ -14,21 +16,21 @@ type ProxyHandler struct {
 
 func (h *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	logger.Println("iniciando proxy")
+	logger.Println(constraints.TextProxingRequest)
 
-	dst := r.URL.Query().Get("to")
+	dst := r.URL.Query().Get(constraints.QueryParamProxyTo)
 	if len(dst) == 0 {
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		http.Error(w, "{ \"error\": \"query param 'to' no found\" }", http.StatusBadRequest)
+		w.Header().Set(constraints.HeaderContentTypeKey, constraints.HeaderContentTypeValueJson)
+		http.Error(w, fmt.Sprintf(constraints.TextQueryParamNotFoundJson, constraints.QueryParamProxyTo), http.StatusBadRequest)
 		return
 	}
 
-	logger.Printf("enviando requisição para %s \n", dst)
+	logger.Printf(constraints.TextSendingReqTo, dst)
 
 	resp, err := http.Get(dst)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.Header().Set(constraints.HeaderContentTypeKey, constraints.HeaderContentTypeValueJson)
 		if e := json.NewEncoder(w).Encode(err); e != nil {
 			w.Write([]byte(e.Error()))
 		}
@@ -40,7 +42,7 @@ func (h *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.Header().Set(constraints.HeaderContentTypeKey, constraints.HeaderContentTypeValueJson)
 		if e := json.NewEncoder(w).Encode(err); e != nil {
 			w.Write([]byte(e.Error()))
 		}
@@ -48,7 +50,7 @@ func (h *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Printf("got response with status: %d and content-type: %s\n", resp.StatusCode, resp.Header.Get("Content-Type"))
+	logger.Printf(constraints.TextGotResponse, resp.StatusCode, resp.Header.Get(constraints.HeaderContentTypeKey))
 
 	for k, v := range resp.Header {
 		for _, s := range v {

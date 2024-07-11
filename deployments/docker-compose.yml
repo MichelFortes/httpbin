@@ -1,0 +1,16 @@
+services:
+  httpbin:
+    build:
+      context: ./..
+      dockerfile: build/Dockerfile
+    environment:
+      - HTTPBIN_SERVICE_PORT=8080
+      - HTTPBIN_SERVICE_ID="my_httpbin"
+    ports:
+      - 8080:8080
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/__health"]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
