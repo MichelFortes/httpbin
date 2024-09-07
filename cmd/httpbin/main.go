@@ -14,7 +14,7 @@ func main() {
 	http.Handle(constraints.EndpointProxy, &handlers.ProxyHandler{})
 	http.Handle(constraints.EndpointHealth, &handlers.HealthHandler{})
 	log.Printf(constraints.TextServerRunnning, port)
-	log.Fatalln(http.ListenAndServe(":"+port, nil))
+	log.Fatalln(http.ListenAndServe("0.0.0.0:"+port, nil))
 }
 
 func getPort() string {
