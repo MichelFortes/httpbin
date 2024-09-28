@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -28,7 +29,15 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	handleSleepSetting(r)
 	handleStatusCodeSetting(r, w)
 
-	w.Header().Set(constraints.ContentTypeKey, constraints.ContentTypeValueJson)
+	if settingContentType := r.Header.Get(constraints.SettingContentType); settingContentType != "" {
+		clientContentType := r.Header.Get(constraints.HeaderContentType)
+		if !strings.EqualFold(clientContentType, settingContentType) {
+			w.WriteHeader(http.StatusUnsupportedMediaType)
+			return
+		}
+	}
+
+	w.Header().Set(constraints.HeaderContentType, constraints.ContentTypeAppJsonUtf8)
 	err := json.NewEncoder(w).Encode(result)
 	if err != nil {
 		log.Default().Fatalln(err)
@@ -42,7 +51,7 @@ func handleSleepSetting(r *http.Request) {
 }
 
 func handleStatusCodeSetting(r *http.Request, w http.ResponseWriter) {
-	if val, err := strconv.Atoi(r.Header.Get(constraints.SettingResponseStatus)); err == nil {
-		w.WriteHeader(val)
+	if status, err := strconv.Atoi(r.Header.Get(constraints.SettingResponseStatus)); err == nil {
+		w.WriteHeader(status)
 	}
 }
