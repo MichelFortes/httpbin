@@ -1,29 +1,58 @@
-# Justificativa
+# What is it?
 
-Esta aplicação foi desenvolvida para debugar requisições HTTP.
+HTTPBin is a server that helps you debug HTTP requests.
 
-# Variáveis de ambiente
+# Environment variables
 
-Esta aplicação espera receber as seguintes variáveis de ambiente:
+This application expects to receive the following environment variables:
 - HTTPBIN_SERVICE_ID (default: "")
-- HTTPBIN_PORT (default: "8888")
+- HTTPBIN_SERVICE_PORT (default: "8888")
 
-# Path /
+# Features
 
-## Features
+You can determine the server's behavior for a specific request-response cycle by sending predefined configuration headers, as follows:
 
-### _Determine o status code_
+### _Set the status code_
 
-Podemos determinar o _status code_ da resposta através do query param **_response_status_**.
+Header: X-HttpBin-Status
 
-### _Determine uma demora na respota_
+Description: Determine the _status code_ of the response.
 
-Podemos determinar um delay, em segundos, na resposta através do query param **_sleep_** (em segundos).
+### _Set a response delay_
 
-## Output
+Header: X-HttpBin-Sleep
 
-Um JSON contendo o informações sobre a requisição e o Container onde a aplicação está sendo executada.
+Description: Determine a response delay in seconds.
+
+## Proxing request
+
+Header: X-HttpBin-Proxy-To
+
+Description: Use the special path "/proxy" to set the destination to which the request should be proxied. The response replicates the headers and body the destination server return.
+
 ```
+curl -i -H "X-HttpBin-Proxy-To: https://google.com" "localhost:8888/proxy"
+```
+
+# Running
+
+## Using go run command
+
+```bash
+go run cmd/httpbin/main.go
+```
+
+## Using docker compose
+
+```bash
+docker compose -f deployments/docker-compose.yml up --build
+```
+
+# Output Example
+
+A JSON containing information about the request and the Container where the application is running.
+
+```bash
 curl -i "localhost:8888/some-path?products=notebook&products=tablet&customer=john"
 ```
 ```
@@ -31,7 +60,7 @@ HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
 Date: Tue, 09 Jan 2024 13:41:57 GMT
 Content-Length: 267
-``` 
+```
 ```json
 {
   "serviceId": "container-01",
@@ -57,25 +86,4 @@ Content-Length: 267
   }
 }
 
-```
-
-# Path /proxy
-
-
-Usado para determinar o destino para o qual a requisição será proxiada.
-
-```
-curl -i "localhost:8888/proxy?to=http://www.google.com"
-```
-
-## output 
-Replica os headers e body do destino proxiado
-
-
-# Execute
-
-Para executar o projeto localmente, entre no diretório _deployments_ e execute:
-
-```bash
-docker compose up
 ```
