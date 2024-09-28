@@ -25,17 +25,24 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Headers:     r.Header,
 	}
 
-	if val, err := strconv.Atoi(r.URL.Query().Get(constraints.QueryParamResponseStatus)); err == nil {
-		w.WriteHeader(val)
-	}
+	handleSleepSetting(r)
+	handleStatusCodeSetting(r, w)
 
-	if slp, err := strconv.Atoi(r.URL.Query().Get(constraints.QueryParamSleep)); err == nil {
-		time.Sleep(time.Second * time.Duration(slp))
-	}
-
-	w.Header().Set(constraints.HeaderContentTypeKey, constraints.HeaderContentTypeValueJson)
+	w.Header().Set(constraints.ContentTypeKey, constraints.ContentTypeValueJson)
 	err := json.NewEncoder(w).Encode(result)
 	if err != nil {
 		log.Default().Fatalln(err)
+	}
+}
+
+func handleSleepSetting(r *http.Request) {
+	if slp, err := strconv.Atoi(r.Header.Get(constraints.SettingSleep)); err == nil {
+		time.Sleep(time.Second * time.Duration(slp))
+	}
+}
+
+func handleStatusCodeSetting(r *http.Request, w http.ResponseWriter) {
+	if val, err := strconv.Atoi(r.Header.Get(constraints.SettingResponseStatus)); err == nil {
+		w.WriteHeader(val)
 	}
 }

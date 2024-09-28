@@ -11,6 +11,6 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/__health"]
       interval: 5s
-      timeout: 10s
+      timeout: 1s
       retries: 3
-      start_period: 5s
+      start_period: 2s
