@@ -20,7 +20,7 @@ func (h *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	dst := r.Header.Get(constraints.SettingProxyTo)
 	if len(dst) == 0 {
-		w.Header().Set(constraints.ContentTypeKey, constraints.ContentTypeValueJson)
+		w.Header().Set(constraints.HeaderContentType, constraints.ContentTypeAppJsonUtf8)
 		http.Error(w, fmt.Sprintf(constraints.TextQueryParamNotFoundJson, constraints.SettingProxyTo), http.StatusBadRequest)
 		return
 	}
@@ -30,7 +30,7 @@ func (h *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	resp, err := http.Get(dst)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Header().Set(constraints.ContentTypeKey, constraints.ContentTypeValueJson)
+		w.Header().Set(constraints.HeaderContentType, constraints.ContentTypeAppJsonUtf8)
 		if e := json.NewEncoder(w).Encode(err); e != nil {
 			w.Write([]byte(e.Error()))
 		}
@@ -42,7 +42,7 @@ func (h *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Header().Set(constraints.ContentTypeKey, constraints.ContentTypeValueJson)
+		w.Header().Set(constraints.HeaderContentType, constraints.ContentTypeAppJsonUtf8)
 		if e := json.NewEncoder(w).Encode(err); e != nil {
 			w.Write([]byte(e.Error()))
 		}
@@ -50,7 +50,7 @@ func (h *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Printf(constraints.TextGotResponse, resp.StatusCode, resp.Header.Get(constraints.ContentTypeKey))
+	logger.Printf(constraints.TextGotResponse, resp.StatusCode, resp.Header.Get(constraints.HeaderContentType))
 
 	for k, v := range resp.Header {
 		for _, s := range v {
