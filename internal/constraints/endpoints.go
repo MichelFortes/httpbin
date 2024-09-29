@@ -1,4 +1,4 @@
 package constraints
 
-const EndpointHealth = "/__health"
+const EndpointHealth = "/health"
 const EndpointProxy = "/proxy"

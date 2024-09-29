@@ -24,15 +24,31 @@ Header: X-HttpBin-Sleep
 
 Description: Determine a response delay in seconds.
 
-## Proxing request
+### _Restrict the content-type accepted by the server_
 
-Header: X-HttpBin-Proxy-To
+Header: X-HttpBin-Content-Type
 
-Description: Use the special path "/proxy" to set the destination to which the request should be proxied. The response replicates the headers and body the destination server return.
+Description: Requests with payloads must declare their content type as the same as that accepted by the server, otherwise the server will return a 415 (Unsupported Media Type) status code.
+
+## Special Features
+
+### Proxing request
+
+Use the special path "/proxy" with the query param "to" to set the destination to which the request should be proxied. The response replicates the headers and body the destination server return.
 
 ```
-curl -i -H "X-HttpBin-Proxy-To: https://google.com" "localhost:8888/proxy"
+curl -i "http://localhost:8888/proxy?to=https://google.com"
 ```
+
+### Health Checks
+
+Use the special path "/health" the check service health.
+It return a simple 200 status code when the service is up and ready.
+
+```
+curl -i "http://localhost:8888/health"
+```
+
 
 # Running
 
