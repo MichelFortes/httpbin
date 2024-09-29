@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func Test_HealthHandlerOnSuccess(t *testing.T) {
+func Test_ShouldReturn200_WhenServiceIsUpAndRunning(t *testing.T) {
 
 	req := httptest.NewRequest("GET", fmt.Sprintf("http://localhost:8080%s", constraints.EndpointHealth), nil)
 	rec := httptest.NewRecorder()
