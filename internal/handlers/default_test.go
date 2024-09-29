@@ -25,7 +25,7 @@ func Test_ShouldReturn200AndContentTypeJson_WhenNothingIsSet(t *testing.T) {
 		t.Fatalf("Expected %d but returned %d", scExpected, sc)
 	}
 
-	ctExpected := constraints.ContentTypeAppJsonUtf8
+	ctExpected := constraints.ContentTypeApplicationJson
 	ct := resp.Header.Get(constraints.HeaderContentType)
 	if !strings.HasPrefix(ct, ctExpected) {
 		t.Fatalf("Expected content-type %s but got %s", ctExpected, ct)
@@ -36,7 +36,7 @@ func Test_ShouldReturn200AndContentTypeJson_WhenNothingIsSet(t *testing.T) {
 func Test_ShouldReturn429_WhenSetStatus429IsSet(t *testing.T) {
 
 	req := httptest.NewRequest("GET", "http://localhost:8080", nil)
-	req.Header.Add(constraints.SettingResponseStatus, "429")
+	req.Header.Add(constraints.HeaderSettingResponseStatus, "429")
 	rec := httptest.NewRecorder()
 
 	var rootHandler = DefaultHandler{}
@@ -56,7 +56,7 @@ func Test_ShouldHaveLatency2_WhenSleep2(t *testing.T) {
 	sleep := 2.0
 
 	req := httptest.NewRequest("GET", "http://localhost:8080", nil)
-	req.Header.Add(constraints.SettingSleep, fmt.Sprintf("%0.0f", sleep))
+	req.Header.Add(constraints.HeaderSettingSleep, fmt.Sprintf("%0.0f", sleep))
 	rec := httptest.NewRecorder()
 
 	var rootHandler = DefaultHandler{}
@@ -75,7 +75,7 @@ func Test_ShouldReturn200_WhenSettingContentTypeIsEqualsToSendByClient(t *testin
 	ctSetting := "application/json"
 
 	req := httptest.NewRequest("POST", "http://localhost:8080", bytes.NewBufferString("{}"))
-	req.Header.Add(constraints.SettingContentType, ctSetting)
+	req.Header.Add(constraints.HeaderSettingContentType, ctSetting)
 	req.Header.Add(constraints.HeaderContentType, ctSetting)
 	rec := httptest.NewRecorder()
 
@@ -97,7 +97,7 @@ func Test_ShouldReturn415_WhenSettingContentTypeIsNotEqualsToSendByClient(t *tes
 	ctClient := "text/html"
 
 	req := httptest.NewRequest("POST", "http://localhost:8080", bytes.NewBufferString("{}"))
-	req.Header.Add(constraints.SettingContentType, ctSetting)
+	req.Header.Add(constraints.HeaderSettingContentType, ctSetting)
 	req.Header.Add(constraints.HeaderContentType, ctClient)
 	rec := httptest.NewRecorder()
 

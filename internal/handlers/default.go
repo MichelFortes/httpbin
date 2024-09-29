@@ -29,7 +29,7 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	handleSleepSetting(r)
 	handleStatusCodeSetting(r, w)
 
-	if settingContentType := r.Header.Get(constraints.SettingContentType); settingContentType != "" {
+	if settingContentType := r.Header.Get(constraints.HeaderSettingContentType); settingContentType != "" {
 		clientContentType := r.Header.Get(constraints.HeaderContentType)
 		if !strings.EqualFold(clientContentType, settingContentType) {
 			w.WriteHeader(http.StatusUnsupportedMediaType)
@@ -37,7 +37,7 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	w.Header().Set(constraints.HeaderContentType, constraints.ContentTypeAppJsonUtf8)
+	w.Header().Set(constraints.HeaderContentType, constraints.ContentTypeApplicationJson)
 	err := json.NewEncoder(w).Encode(result)
 	if err != nil {
 		log.Default().Fatalln(err)
@@ -45,13 +45,13 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleSleepSetting(r *http.Request) {
-	if slp, err := strconv.Atoi(r.Header.Get(constraints.SettingSleep)); err == nil {
+	if slp, err := strconv.Atoi(r.Header.Get(constraints.HeaderSettingSleep)); err == nil {
 		time.Sleep(time.Second * time.Duration(slp))
 	}
 }
 
 func handleStatusCodeSetting(r *http.Request, w http.ResponseWriter) {
-	if status, err := strconv.Atoi(r.Header.Get(constraints.SettingResponseStatus)); err == nil {
+	if status, err := strconv.Atoi(r.Header.Get(constraints.HeaderSettingResponseStatus)); err == nil {
 		w.WriteHeader(status)
 	}
 }

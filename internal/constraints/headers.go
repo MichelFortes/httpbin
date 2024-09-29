@@ -1,10 +1,7 @@
 package constraints
 
 const HeaderContentType = "Content-Type"
-const ContentTypeAppJsonUtf8 = "application/json; charset=utf-8"
-
-const reqRespHeaderPrefix = "X-HttpBin-"
-const SettingProxyTo = reqRespHeaderPrefix + "Proxy-To"
-const SettingResponseStatus = reqRespHeaderPrefix + "Status"
-const SettingSleep = reqRespHeaderPrefix + "Sleep"
-const SettingContentType = reqRespHeaderPrefix + "ContentType"
+const HeaderSettingProxyTo = "X-HttpBin-Proxy-To"
+const HeaderSettingResponseStatus = "X-HttpBin-Status"
+const HeaderSettingSleep = "X-HttpBin-Sleep"
+const HeaderSettingContentType = "X-HttpBin-Content-Type"
