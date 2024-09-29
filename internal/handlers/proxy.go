@@ -18,16 +18,17 @@ func (h *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	logger.Println(constraints.TextProxingRequest)
 
-	dst := r.Header.Get(constraints.HeaderSettingProxyTo)
+	dst := r.URL.Query().Get(constraints.QueryParamTo)
 	if len(dst) == 0 {
 		w.Header().Set(constraints.HeaderContentType, constraints.ContentTypeApplicationJson)
-		http.Error(w, fmt.Sprintf(constraints.TextQueryParamNotFoundJson, constraints.HeaderSettingProxyTo), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf(constraints.TextJsonErrorQueryParamNotFound, constraints.QueryParamTo), http.StatusBadRequest)
 		return
 	}
 
 	logger.Printf(constraints.TextSendingReqTo, dst)
 
 	resp, err := http.Get(dst)
+
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set(constraints.HeaderContentType, constraints.ContentTypeApplicationJson)
@@ -40,6 +41,7 @@ func (h *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
+
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set(constraints.HeaderContentType, constraints.ContentTypeApplicationJson)
