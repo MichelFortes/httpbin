@@ -68,38 +68,53 @@ docker compose -f deployments/docker-compose.yml up --build
 
 A JSON containing information about the request and the Container where the application is running.
 
+Conteúdo do arquivo `payload.json`:
+
+```json
+{
+    "name": "Jhon Doe",
+    "email": "john.doe@example.com"
+}
+```
+
 ```bash
-curl -i "localhost:8888/some-path?products=notebook&products=tablet&customer=john"
+curl -i -H "Content-Type: application/json" -X POST "localhost:8888/some-path?fruits=apple&fruits=orange&drink=juice" -d @payload.json
 ```
 ```
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
 Date: Tue, 09 Jan 2024 13:41:57 GMT
-Content-Length: 267
+Content-Length: 340
 ```
 ```json
 {
   "serviceId": "container-01",
   "remoteAddr": "127.0.0.1:57968",
-  "method": "GET",
+  "method": "POST",
   "path": "/some-path",
   "queryParams": {
-    "customer": [
-      "john"
+    "drink": [
+      "juice"
     ],
-    "products": [
-      "notebook",
-      "tablet"
+    "fruits": [
+      "apple",
+      "orange"
     ]
   },
   "headers": {
     "Accept": [
       "*/*"
     ],
+    "Content-Length": [
+      "60"
+    ],
+    "Content-Type": [
+      "application/json"
+    ],
     "User-Agent": [
-      "curl/7.81.0"
+      "curl/8.7.1"
     ]
-  }
+  },
+  "payload": "{    \"name\": \"Jhon Doe\",    \"email\": \"john.doe@example.com\"}"
 }
-
 ```
