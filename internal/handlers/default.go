@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"io"
 	"log"
 	"michelfortes/httpbin/internal/constraints"
 	"michelfortes/httpbin/pkg/model"
@@ -26,12 +27,20 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Headers:     r.Header,
 	}
 
+	if r.Body != nil {
+		defer r.Body.Close()
+		bodyBytes, err := io.ReadAll(r.Body)
+		if err == nil {
+			result.Payload = string(bodyBytes)
+		}
+	}
+
 	handleSleepSetting(r)
 	handleStatusCodeSetting(r, w)
 
-	if settingContentType := r.Header.Get(constraints.HeaderSettingContentType); settingContentType != "" {
-		clientContentType := r.Header.Get(constraints.HeaderContentType)
-		if !strings.EqualFold(clientContentType, settingContentType) {
+	if settingContentType := r.Header.Get(constraints.HeaderSettingContentType); len(settingContentType) > 0 {
+
+		if clientContentType := r.Header.Get(constraints.HeaderContentType); !strings.EqualFold(clientContentType, settingContentType) {
 			w.WriteHeader(http.StatusUnsupportedMediaType)
 			return
 		}

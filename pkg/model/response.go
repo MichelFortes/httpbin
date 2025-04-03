@@ -7,4 +7,5 @@ type ResponseBody struct {
 	Path        string              `json:"path"`
 	QueryParams map[string][]string `json:"queryParams"`
 	Headers     map[string][]string `json:"headers"`
+	Payload     string              `json:"payload,omitempty"`
 }
