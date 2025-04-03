@@ -2,113 +2,86 @@ package handlers
 
 import (
 	"bytes"
-	"fmt"
+	"encoding/json"
 	"michelfortes/httpbin/internal/constraints"
+	"michelfortes/httpbin/pkg/model"
+	"net/http"
 	"net/http/httptest"
-	"strings"
+	"os"
 	"testing"
 	"time"
 )
 
-func Test_ShouldReturn200AndContentTypeJson_WhenNothingIsSet(t *testing.T) {
+func TestDefaultHandler_ServeHTTP(t *testing.T) {
+	os.Setenv(constraints.EnvServiceId, "test-service-id")
+	defer os.Unsetenv(constraints.EnvServiceId)
 
-	req := httptest.NewRequest("GET", "http://localhost:8080", nil)
-	rec := httptest.NewRecorder()
+	handler := &DefaultHandler{}
 
-	var rootHandler = DefaultHandler{}
-	rootHandler.ServeHTTP(rec, req)
-	resp := rec.Result()
+	t.Run("basic request", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/test-path", nil)
+		req.RemoteAddr = "127.0.0.1:12345"
+		req.Header.Set("Test-Header", "HeaderValue")
 
-	scExpected := 200
-	sc := resp.StatusCode
-	if sc != scExpected {
-		t.Fatalf("Expected %d but returned %d", scExpected, sc)
-	}
+		rec := httptest.NewRecorder()
+		handler.ServeHTTP(rec, req)
 
-	ctExpected := constraints.ContentTypeApplicationJson
-	ct := resp.Header.Get(constraints.HeaderContentType)
-	if !strings.HasPrefix(ct, ctExpected) {
-		t.Fatalf("Expected content-type %s but got %s", ctExpected, ct)
-	}
+		if rec.Code != http.StatusOK {
+			t.Errorf("expected status 200, got %d", rec.Code)
+		}
 
-}
+		var response model.ResponseBody
+		if err := json.NewDecoder(rec.Body).Decode(&response); err != nil {
+			t.Fatalf("failed to decode response: %v", err)
+		}
 
-func Test_ShouldReturn429_WhenSetStatus429IsSet(t *testing.T) {
+		if response.ServiceId != "test-service-id" {
+			t.Errorf("expected ServiceId 'test-service-id', got '%s'", response.ServiceId)
+		}
+		if response.Path != "/test-path" {
+			t.Errorf("expected Path '/test-path', got '%s'", response.Path)
+		}
+		if response.Headers["Test-Header"][0] != "HeaderValue" {
+			t.Errorf("expected header 'Test-Header' to be 'HeaderValue', got '%s'", response.Headers["Test-Header"][0])
+		}
+	})
 
-	req := httptest.NewRequest("GET", "http://localhost:8080", nil)
-	req.Header.Add(constraints.HeaderSettingResponseStatus, "429")
-	rec := httptest.NewRecorder()
+	t.Run("custom status code", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req.Header.Set(constraints.HeaderSettingResponseStatus, "418")
 
-	var rootHandler = DefaultHandler{}
-	rootHandler.ServeHTTP(rec, req)
-	resp := rec.Result()
+		rec := httptest.NewRecorder()
+		handler.ServeHTTP(rec, req)
 
-	scExpected := 429
-	sc := resp.StatusCode
-	if sc != scExpected {
-		t.Fatalf("Expected %d but returned %d", scExpected, sc)
-	}
+		if rec.Code != http.StatusTeapot {
+			t.Errorf("expected status 418, got %d", rec.Code)
+		}
+	})
 
-}
+	t.Run("sleep behavior", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req.Header.Set(constraints.HeaderSettingSleep, "1")
 
-func Test_ShouldHaveLatency2_WhenSleep2(t *testing.T) {
+		start := time.Now()
+		rec := httptest.NewRecorder()
+		handler.ServeHTTP(rec, req)
+		duration := time.Since(start)
 
-	sleep := 2.0
+		if duration < time.Second {
+			t.Errorf("expected sleep of at least 1 second, got %v", duration)
+		}
+	})
 
-	req := httptest.NewRequest("GET", "http://localhost:8080", nil)
-	req.Header.Add(constraints.HeaderSettingSleep, fmt.Sprintf("%0.0f", sleep))
-	rec := httptest.NewRecorder()
+	t.Run("unsupported media type", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodPost, "/", bytes.NewBufferString("test payload"))
+		req.Header.Set(constraints.HeaderSettingContentType, "application/json")
+		req.Header.Set("Content-Type", "text/plain") // Fixed header key
 
-	var rootHandler = DefaultHandler{}
-	startTime := time.Now()
-	rootHandler.ServeHTTP(rec, req)
+		rec := httptest.NewRecorder()
+		handler.ServeHTTP(rec, req)
 
-	dur := time.Since(startTime)
-	if dur.Seconds() < sleep {
-		t.Fatalf("Expected %f but returned %f", sleep, dur.Seconds())
-	}
-
-}
-
-func Test_ShouldReturn200_WhenSettingContentTypeIsEqualsToSendByClient(t *testing.T) {
-
-	ctSetting := "application/json"
-
-	req := httptest.NewRequest("POST", "http://localhost:8080", bytes.NewBufferString("{}"))
-	req.Header.Add(constraints.HeaderSettingContentType, ctSetting)
-	req.Header.Add(constraints.HeaderContentType, ctSetting)
-	rec := httptest.NewRecorder()
-
-	var rootHandler = DefaultHandler{}
-	rootHandler.ServeHTTP(rec, req)
-	resp := rec.Result()
-
-	scExpected := 200
-	sc := resp.StatusCode
-	if sc != scExpected {
-		t.Fatalf("Expected %d but returned %d", scExpected, sc)
-	}
-
-}
-
-func Test_ShouldReturn415_WhenSettingContentTypeIsNotEqualsToSendByClient(t *testing.T) {
-
-	ctSetting := "application/json"
-	ctClient := "text/html"
-
-	req := httptest.NewRequest("POST", "http://localhost:8080", bytes.NewBufferString("{}"))
-	req.Header.Add(constraints.HeaderSettingContentType, ctSetting)
-	req.Header.Add(constraints.HeaderContentType, ctClient)
-	rec := httptest.NewRecorder()
-
-	var rootHandler = DefaultHandler{}
-	rootHandler.ServeHTTP(rec, req)
-	resp := rec.Result()
-
-	scExpected := 415
-	sc := resp.StatusCode
-	if sc != scExpected {
-		t.Fatalf("Expected %d but returned %d", scExpected, sc)
-	}
-
+		if rec.Code != http.StatusUnsupportedMediaType {
+			t.Errorf("expected status 415, got %d", rec.Code)
+		}
+	})
 }
