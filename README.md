@@ -1,3 +1,5 @@
+[![Docker Pulls](https://img.shields.io/docker/pulls/michelfortes/httpbin.svg)](https://hub.docker.com/r/michelfortes/httpbin)
+
 # What is it?
 
 HTTPBin is a server that helps you debug HTTP requests.
