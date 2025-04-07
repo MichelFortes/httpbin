@@ -117,5 +117,5 @@ Content-Length: 340
       "curl/8.7.1"
     ]
   },
-  "payload": "{    \"name\": \"Jhon Doe\",    \"email\": \"john.doe@example.com\"}"
+  "payload": "{ \"name\": \"Jhon Doe\", \"email\": \"john.doe@example.com\" }"
 }
