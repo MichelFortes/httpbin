@@ -27,7 +27,21 @@ func (h *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	logger.Printf(constraints.TextSendingReqTo, dst)
 
-	resp, err := http.Get(dst)
+	req, err := http.NewRequest(r.Method, dst, r.Body)
+	if err != nil {
+		logger.Println("Error creating request:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	for k, v := range r.Header {
+		for _, s := range v {
+			req.Header.Add(k, s)
+		}
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		logger.Println("Error:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -59,5 +73,4 @@ func (h *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if len(body) > 0 {
 		w.Write(body)
 	}
-
 }
