@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"log"
@@ -17,6 +18,12 @@ type DefaultHandler struct {
 }
 
 func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// Criar um contexto com timeout
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	// Substituir o contexto da requisição pelo novo contexto
+	r = r.WithContext(ctx)
 
 	result := model.ResponseBody{
 		ServiceId:   os.Getenv(constraints.EnvServiceId),
@@ -35,7 +42,14 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	handleSleepSetting(r)
+	select {
+	case <-ctx.Done():
+		http.Error(w, "Request timed out", http.StatusGatewayTimeout)
+		return
+	default:
+	}
+
+	handleSleepSetting(ctx, r)
 	handleStatusCodeSetting(r, w)
 
 	if settingContentType := r.Header.Get(constraints.HeaderSettingContentType); len(settingContentType) > 0 {
@@ -53,9 +67,13 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleSleepSetting(r *http.Request) {
+func handleSleepSetting(ctx context.Context, r *http.Request) {
 	if slp, err := strconv.Atoi(r.Header.Get(constraints.HeaderSettingSleep)); err == nil {
-		time.Sleep(time.Second * time.Duration(slp))
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(time.Second * time.Duration(slp)):
+		}
 	}
 }
 
