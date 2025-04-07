@@ -28,20 +28,14 @@ func (h *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	logger.Printf(constraints.TextSendingReqTo, dst)
 
 	resp, err := http.Get(dst)
-
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Header().Set(constraints.HeaderContentType, constraints.ContentTypeApplicationJson)
-		if e := json.NewEncoder(w).Encode(err); e != nil {
-			w.Write([]byte(e.Error()))
-		}
-		logger.Panicln(err)
+		logger.Println("Error:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
-
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set(constraints.HeaderContentType, constraints.ContentTypeApplicationJson)
