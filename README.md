@@ -18,25 +18,25 @@ You can determine the server's behavior for a specific request-response cycle by
 
 Header: X-HttpBin-Status
 
-Description: Determine the _status code_ of the response.
+Description: Specifies the _status code_ of the response.
 
 ### _Set a response delay_
 
 Header: X-HttpBin-Sleep
 
-Description: Determine a response delay in seconds.
+Description: Specifies a response delay in seconds.
 
 ### _Restrict the content-type accepted by the server_
 
 Header: X-HttpBin-Content-Type
 
-Description: Requests with payloads must declare their content type as the same as that accepted by the server, otherwise the server will return a 415 (Unsupported Media Type) status code.
+Description: Requests with payloads must declare a content type that matches the one accepted by the server, otherwise the server will return a 415 (Unsupported Media Type) status code.
 
 ## Special Features
 
-### Proxing request
+### Proxying request
 
-Use the special path "/proxy" with the query param "to" to set the destination to which the request should be proxied. The response replicates the headers and body the destination server return.
+Use the special path "/proxy" with the query param "to" to set the destination to which the request should be proxied. The response replicates the headers and body the destination server returns.
 
 ```
 curl -i "http://localhost:8888/proxy?to=https://google.com"
@@ -44,8 +44,8 @@ curl -i "http://localhost:8888/proxy?to=https://google.com"
 
 ### Health Checks
 
-Use the special path "/health" the check service health.
-It return a simple 200 status code when the service is up and ready.
+Use the special path "/health" to check service health.
+It returns a simple 200 status code when the service is up and ready.
 
 ```
 curl -i "http://localhost:8888/health"
@@ -74,7 +74,7 @@ Conteúdo do arquivo `payload.json`:
 
 ```json
 {
-    "name": "Jhon Doe",
+    "name": "John Doe",
     "email": "john.doe@example.com"
 }
 ```
@@ -119,4 +119,3 @@ Content-Length: 340
   },
   "payload": "{    \"name\": \"Jhon Doe\",    \"email\": \"john.doe@example.com\"}"
 }
-```
