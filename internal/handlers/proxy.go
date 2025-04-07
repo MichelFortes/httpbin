@@ -6,10 +6,30 @@ import (
 	"io"
 	"log"
 	"michelfortes/httpbin/internal/constraints"
+	"net"
 	"net/http"
+	"time"
 )
 
 var logger = log.Default()
+
+var client *http.Client
+
+func init() {
+	client = &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			DialContext: (&net.Dialer{
+				Timeout:   5 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).DialContext,
+			MaxIdleConns:          100,
+			IdleConnTimeout:       90 * time.Second,
+			TLSHandshakeTimeout:   10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+		},
+	}
+}
 
 type ProxyHandler struct {
 }
@@ -40,7 +60,6 @@ func (h *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		logger.Println("Error:", err)
