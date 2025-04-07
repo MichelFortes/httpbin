@@ -51,7 +51,6 @@ It returns a simple 200 status code when the service is up and ready.
 curl -i "http://localhost:8888/health"
 ```
 
-
 # Running
 
 ## Using go run command
