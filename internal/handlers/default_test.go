@@ -72,6 +72,25 @@ func TestDefaultHandler_ServeHTTP(t *testing.T) {
 		}
 	})
 
+	t.Run("dynamic timeout", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		// Request 6 seconds sleep, which is > default 5s timeout
+		req.Header.Set(constraints.HeaderSettingSleep, "6")
+
+		start := time.Now()
+		rec := httptest.NewRecorder()
+		handler.ServeHTTP(rec, req)
+		duration := time.Since(start)
+
+		if rec.Code != http.StatusOK {
+			t.Errorf("expected status 200, got %d", rec.Code)
+		}
+
+		if duration < 6*time.Second {
+			t.Errorf("expected sleep of at least 6 seconds, got %v", duration)
+		}
+	})
+
 	t.Run("unsupported media type", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/", bytes.NewBufferString("test payload"))
 		req.Header.Set(constraints.HeaderSettingContentType, "application/json")
