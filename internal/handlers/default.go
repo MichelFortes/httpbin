@@ -18,8 +18,16 @@ type DefaultHandler struct {
 }
 
 func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// Parse sleep setting first to determine timeout
+	timeout := 5 * time.Second
+	if slpRaw := r.Header.Get(constraints.HeaderSettingSleep); slpRaw != "" {
+		if slp, err := strconv.Atoi(slpRaw); err == nil {
+			timeout = time.Duration(slp)*time.Second + 5*time.Second
+		}
+	}
+
 	// Criar um contexto com timeout
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), timeout)
 	defer cancel()
 
 	// Substituir o contexto da requisição pelo novo contexto
@@ -63,7 +71,7 @@ func (h *DefaultHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set(constraints.HeaderContentType, constraints.ContentTypeApplicationJson)
 	err := json.NewEncoder(w).Encode(result)
 	if err != nil {
-		log.Default().Fatalln(err)
+		log.Println(err)
 	}
 }
 
