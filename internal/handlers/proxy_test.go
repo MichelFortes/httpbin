@@ -119,14 +119,3 @@ func Test_ProxyHandler_ShouldReturn500_WhenDestinationURLIsInvalid(t *testing.T)
 		t.Fatalf("Expected status code %d, got %d", http.StatusInternalServerError, rec.Code)
 	}
 }
-
-// brokenReader simulates a broken response body
-type brokenReader struct{}
-
-func (b *brokenReader) Read(p []byte) (n int, err error) {
-	return 0, fmt.Errorf("broken reader")
-}
-
-func (b *brokenReader) Close() error {
-	return nil
-}
